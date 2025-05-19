@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-import {Tabs, TabsContent, TabsList, TabsTrigger} from '@/components/ui/tabs';
 import {usePathname, useRouter} from 'next/navigation';
 
 interface DashboardLayoutProps {
@@ -19,39 +18,37 @@ export function DashboardLayout({children}: DashboardLayoutProps) {
     {id: 'analytics', label: 'Analytics', path: '/dashboard/analytics'}
   ];
 
-  const currentTab =
-    tabs.find(tab => pathname.startsWith(tab.path))?.id || 'overview';
+  const currentTab = tabs.find(tab => pathname === tab.path)?.id || 'overview';
 
-  const handleTabChange = (value: string) => {
-    const tab = tabs.find(tab => tab.id === value);
-    if (tab) {
-      router.push(tab.path);
+  const handleTabClick = (path: string) => {
+    if (pathname !== path) {
+      router.push(path);
     }
   };
 
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-8">
-        <Tabs
-          value={currentTab}
-          onValueChange={handleTabChange}
-          className="w-full"
-        >
-          <TabsList className="grid w-full grid-cols-4 mb-8">
-            {tabs.map(tab => (
-              <TabsTrigger
-                key={tab.id}
-                value={tab.id}
-                className="data-[state=active]:bg-white data-[state=active]:text-primary"
-              >
-                {tab.label}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-          <TabsContent value={currentTab} className="mt-0">
-            {children}
-          </TabsContent>
-        </Tabs>
+        <div className="flex justify-between w-full max-w-4xl mx-auto mb-8">
+          {tabs.map(tab => (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => handleTabClick(tab.path)}
+              className={`px-8 py-4 rounded-md transition font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2
+                ${
+                  currentTab === tab.id
+                    ? 'bg-blue-600 text-white shadow'
+                    : 'bg-transparent text-black hover:bg-gray-100'
+                }
+              `}
+              aria-current={currentTab === tab.id ? 'page' : undefined}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+        <div>{children}</div>
       </div>
     </div>
   );
