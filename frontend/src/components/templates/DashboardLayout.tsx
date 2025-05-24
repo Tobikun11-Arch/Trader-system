@@ -23,7 +23,6 @@ export function DashboardLayout({children}: DashboardLayoutProps) {
   const handleTabClick = (path: string) => {
     if (pathname !== path) {
       router.push(path);
-      //added rndom comment
     }
   };
 
