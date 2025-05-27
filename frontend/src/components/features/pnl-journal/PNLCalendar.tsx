@@ -61,21 +61,29 @@ export const PNLCalendar: React.FC = () => {
   );
 
   const handlePrevMonth = () => {
-    if (selectedMonth === 0) {
-      setSelectedMonth(11);
-      setSelectedYear(prev => prev - 1);
-    } else {
-      setSelectedMonth(prev => prev - 1);
-    }
+    setSelectedMonth(prev => {
+      if (prev === null) return 11;
+      if (prev === 0) {
+        setSelectedYear(y =>
+          y === null ? new Date().getFullYear() - 1 : y - 1
+        );
+        return 11;
+      }
+      return prev - 1;
+    });
   };
 
   const handleNextMonth = () => {
-    if (selectedMonth === 11) {
-      setSelectedMonth(0);
-      setSelectedYear(prev => prev + 1);
-    } else {
-      setSelectedMonth(prev => prev + 1);
-    }
+    setSelectedMonth(prev => {
+      if (prev === null) return 0;
+      if (prev === 11) {
+        setSelectedYear(y =>
+          y === null ? new Date().getFullYear() + 1 : y + 1
+        );
+        return 0;
+      }
+      return prev + 1;
+    });
   };
 
   if (selectedYear === null || selectedMonth === null) {
