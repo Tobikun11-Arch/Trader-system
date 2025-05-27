@@ -1,6 +1,15 @@
 'use client';
-import React from 'react';
+import React, {useState, useCallback, useEffect} from 'react';
+import {AddTradeModal} from './AddTradeModal';
+import {Button} from '@/components/ui/button';
+import {ChevronLeft, ChevronRight} from 'lucide-react';
 import {usePNLCalendar} from '@/lib/client/queries/pnl-journal';
+
+interface TradeData {
+  date: string;
+  pnl: number;
+  trades: number;
+}
 
 function getDaysInMonth(year: number, month: number) {
   return new Date(year, month + 1, 0).getDate();
@@ -10,8 +19,128 @@ function getFirstDayOfWeek(year: number, month: number) {
   return new Date(year, month, 1).getDay();
 }
 
+// Helper to get previous month's last day
+function getPrevMonthLastDay(year: number, month: number) {
+  return new Date(year, month, 0).getDate();
+}
+
 export const PNLCalendar: React.FC = () => {
   const {data, isLoading, error} = usePNLCalendar();
+  const [selectedYear, setSelectedYear] = useState<number | null>(null);
+  const [selectedMonth, setSelectedMonth] = useState<number | null>(null);
+  const [tradeData, setTradeData] = useState<Record<string, TradeData>>({});
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Set initial year/month on client only
+  useEffect(() => {
+    const now = new Date();
+    setSelectedYear(now.getFullYear());
+    setSelectedMonth(now.getMonth());
+  }, []);
+
+  const handleDateClick = (date: string) => {
+    setSelectedDate(date);
+    setIsModalOpen(true);
+  };
+
+  const handleSaveTrade = useCallback(
+    (data: {trades: number; pnl: number}) => {
+      if (selectedDate) {
+        setTradeData(prev => ({
+          ...prev,
+          [selectedDate]: {
+            date: selectedDate,
+            trades: data.trades,
+            pnl: data.pnl
+          }
+        }));
+      }
+    },
+    [selectedDate]
+  );
+
+  const handlePrevMonth = () => {
+    if (selectedMonth === 0) {
+      setSelectedMonth(11);
+      setSelectedYear(prev => prev - 1);
+    } else {
+      setSelectedMonth(prev => prev - 1);
+    }
+  };
+
+  const handleNextMonth = () => {
+    if (selectedMonth === 11) {
+      setSelectedMonth(0);
+      setSelectedYear(prev => prev + 1);
+    } else {
+      setSelectedMonth(prev => prev + 1);
+    }
+  };
+
+  if (selectedYear === null || selectedMonth === null) {
+    return null; // or a loading spinner
+  }
+
+  const daysInMonth = getDaysInMonth(selectedYear, selectedMonth);
+  const firstDayOfWeek = getFirstDayOfWeek(selectedYear, selectedMonth);
+  const prevMonth = selectedMonth === 0 ? 11 : selectedMonth - 1;
+  const prevMonthYear = selectedMonth === 0 ? selectedYear - 1 : selectedYear;
+  const prevMonthLastDay = getPrevMonthLastDay(selectedYear, selectedMonth);
+  const nextMonth = selectedMonth === 11 ? 0 : selectedMonth + 1;
+  const nextMonthYear = selectedMonth === 11 ? selectedYear + 1 : selectedYear;
+
+  // Build calendar days array with info about which month each day belongs to
+  const calendarDays: {
+    day: number;
+    month: number;
+    year: number;
+    isCurrentMonth: boolean;
+  }[] = [];
+
+  // Previous month's days (if any)
+  for (let i = firstDayOfWeek - 1; i >= 0; i--) {
+    calendarDays.push({
+      day: prevMonthLastDay - i,
+      month: prevMonth,
+      year: prevMonthYear,
+      isCurrentMonth: false
+    });
+  }
+  // Current month's days
+  for (let d = 1; d <= daysInMonth; d++) {
+    calendarDays.push({
+      day: d,
+      month: selectedMonth,
+      year: selectedYear,
+      isCurrentMonth: true
+    });
+  }
+  // Next month's days (to fill the last week)
+  const totalCells = Math.ceil(calendarDays.length / 7) * 7;
+  for (let d = 1; calendarDays.length < totalCells; d++) {
+    calendarDays.push({
+      day: d,
+      month: nextMonth,
+      year: nextMonthYear,
+      isCurrentMonth: false
+    });
+  }
+
+  const monthNames = [
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December'
+  ];
 
   if (isLoading)
     return (
@@ -42,95 +171,97 @@ export const PNLCalendar: React.FC = () => {
   if (!data)
     return <div className="p-8 text-center text-gray-400">No data.</div>;
 
-  const [year, month] = data.month.split('-').map(Number);
-  const daysInMonth = getDaysInMonth(year, month - 1);
-  const firstDayOfWeek = getFirstDayOfWeek(year, month - 1);
-  const days: ((typeof data.days)[0] | null)[] =
-    Array(firstDayOfWeek).fill(null);
-  for (let d = 1; d <= daysInMonth; d++) {
-    const dateStr = `${data.month}-${d.toString().padStart(2, '0')}`;
-    const day = data.days.find(day => day.date === dateStr) || null;
-    days.push(day);
-  }
-  while (days.length % 7 !== 0) days.push(null);
-
   return (
-    <div className="bg-gray-50 rounded-lg p-4 shadow">
-      <div className="flex items-center justify-between mb-2">
-        {/* Month/Year Picker */}
+    <div className="bg-white rounded-lg p-4 shadow">
+      <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <select
-            className="border rounded px-2 py-1 text-sm"
-            defaultValue={month}
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={handlePrevMonth}
+            className="h-8 w-8"
           >
-            {[
-              'January',
-              'February',
-              'March',
-              'April',
-              'May',
-              'June',
-              'July',
-              'August',
-              'September',
-              'October',
-              'November',
-              'December'
-            ].map((m, idx) => (
-              <option key={m} value={idx + 1}>
-                {m}
-              </option>
-            ))}
-          </select>
-          <select
-            className="border rounded px-2 py-1 text-sm"
-            defaultValue={year}
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          <h2 className="text-xl font-semibold">
+            {monthNames[selectedMonth]} {selectedYear}
+          </h2>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={handleNextMonth}
+            className="h-8 w-8"
           >
-            {[year - 2, year - 1, year, year + 1, year + 2].map(y => (
-              <option key={y} value={y}>
-                {y}
-              </option>
-            ))}
-          </select>
+            <ChevronRight className="h-4 w-4" />
+          </Button>
         </div>
       </div>
+
       <div className="grid grid-cols-7 gap-2">
-        {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => (
-          <div key={d} className="text-xs font-bold text-gray-500 text-center">
-            {d}
+        {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+          <div
+            key={day}
+            className="text-center text-sm font-medium text-gray-500 py-2"
+          >
+            {day}
           </div>
         ))}
-        {days.map((day, i) => (
-          <div
-            key={i}
-            className="h-32 min-h-[120px] flex flex-col items-center justify-center border rounded bg-white relative"
-          >
-            {day ? (
-              <>
+        {calendarDays.map((dateObj, i) => {
+          const {day, month, year, isCurrentMonth} = dateObj;
+          const dateStr = `${year}-${String(month + 1).padStart(
+            2,
+            '0'
+          )}-${String(day).padStart(2, '0')}`;
+          const trade = tradeData[dateStr] || null;
+          return (
+            <div
+              key={i}
+              onClick={() => {
+                if (isCurrentMonth) handleDateClick(dateStr);
+              }}
+              className={`
+                min-h-[100px] p-2 border rounded-lg
+                ${
+                  isCurrentMonth
+                    ? 'cursor-pointer bg-white hover:bg-gray-50'
+                    : 'bg-gray-50 text-gray-300'
+                }
+                ${
+                  isCurrentMonth && trade?.pnl
+                    ? trade.pnl >= 0
+                      ? 'border-green-200'
+                      : 'border-red-200'
+                    : ''
+                }
+              `}
+            >
+              <div
+                className={`text-sm ${
+                  isCurrentMonth ? 'text-gray-500' : 'text-gray-300'
+                }`}
+              >
+                {day}
+              </div>
+              {isCurrentMonth && trade && (
                 <div
-                  className={`text-sm font-semibold ${
-                    day.pnl >= 0 ? 'text-green-600' : 'text-red-500'
+                  className={`text-sm font-medium ${
+                    trade.pnl >= 0 ? 'text-green-600' : 'text-red-500'
                   }`}
                 >
-                  {day.pnl >= 0
-                    ? `$${day.pnl.toFixed(2)}`
-                    : `-$${Math.abs(day.pnl).toFixed(2)}`}
+                  {trade.pnl}
                 </div>
-                <div className="text-xs text-gray-400">
-                  {day.trades} trade{day.trades > 1 ? 's' : ''}
-                </div>
-                <div className="absolute top-1 left-1 text-xs text-gray-400">
-                  {parseInt(day.date.split('-')[2], 10)}
-                </div>
-              </>
-            ) : null}
-          </div>
-        ))}
+              )}
+            </div>
+          );
+        })}
       </div>
-      {/* Monthly Percentage Static Data */}
-      <div className="mt-4 text-center text-lg font-bold">
-        Monthly P&L: <span className="text-green-600">+12.5%</span>
-      </div>
+
+      <AddTradeModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSave={handleSaveTrade}
+        date={selectedDate || ''}
+      />
     </div>
   );
 };
