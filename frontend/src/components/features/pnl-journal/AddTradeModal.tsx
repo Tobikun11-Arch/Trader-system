@@ -53,10 +53,14 @@ export const AddTradeModal: React.FC<AddTradeModalProps> = ({
               </Label>
               <Input
                 id="trades"
-                type="number"
-                min="1"
+                type="text"
+                inputMode="numeric"
+                pattern="^[0-9]*$"
                 value={trades}
-                onChange={e => setTrades(parseInt(e.target.value) || 1)}
+                onChange={e => {
+                  const val = e.target.value.replace(/[^0-9]/g, '');
+                  setTrades(val ? parseInt(val) : 1);
+                }}
                 className="col-span-3"
               />
             </div>
@@ -66,10 +70,18 @@ export const AddTradeModal: React.FC<AddTradeModalProps> = ({
               </Label>
               <Input
                 id="pnl"
-                type="number"
-                step="0.01"
+                type="text"
+                inputMode="decimal"
+                pattern="^-?\d*(\.\d*)?$"
                 value={pnl}
-                onChange={e => setPnl(e.target.value)}
+                onChange={e => {
+                  let val = e.target.value.replace(/[^0-9.-]/g, '');
+                  val = val.replace(/(?!^)-/g, '');
+                  const parts = val.split('.');
+                  if (parts.length > 2)
+                    val = parts[0] + '.' + parts.slice(1).join('');
+                  setPnl(val);
+                }}
                 className="col-span-3"
                 placeholder="Enter P&L amount"
                 required

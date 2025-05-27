@@ -221,6 +221,14 @@ export const PNLCalendar: React.FC = () => {
             '0'
           )}-${String(day).padStart(2, '0')}`;
           const trade = tradeData[dateStr] || null;
+          let bgColor = '';
+          if (isCurrentMonth && trade) {
+            bgColor = trade.pnl < 0 ? 'bg-red-100' : 'bg-green-100';
+          } else if (!isCurrentMonth) {
+            bgColor = 'bg-gray-100';
+          } else {
+            bgColor = 'bg-white';
+          }
           return (
             <div
               key={i}
@@ -228,11 +236,12 @@ export const PNLCalendar: React.FC = () => {
                 if (isCurrentMonth) handleDateClick(dateStr);
               }}
               className={`
-                min-h-[100px] p-2 border rounded-lg
+                min-h-[100px] p-2 border rounded-lg flex flex-col items-start justify-start
+                ${bgColor}
                 ${
                   isCurrentMonth
-                    ? 'cursor-pointer bg-white hover:bg-gray-50'
-                    : 'bg-gray-50 text-gray-300'
+                    ? 'cursor-pointer hover:bg-gray-50'
+                    : 'text-gray-400'
                 }
                 ${
                   isCurrentMonth && trade?.pnl
@@ -244,20 +253,29 @@ export const PNLCalendar: React.FC = () => {
               `}
             >
               <div
-                className={`text-sm ${
-                  isCurrentMonth ? 'text-gray-500' : 'text-gray-300'
+                className={`text-xs font-semibold mb-1 ${
+                  isCurrentMonth ? 'text-gray-500' : 'text-gray-400'
                 }`}
               >
                 {day}
               </div>
               {isCurrentMonth && trade && (
-                <div
-                  className={`text-sm font-medium ${
-                    trade.pnl >= 0 ? 'text-green-600' : 'text-red-500'
-                  }`}
-                >
-                  {trade.pnl}
-                </div>
+                <>
+                  <div
+                    className={`text-xl font-bold mb-1 ${
+                      trade.pnl >= 0 ? 'text-green-600' : 'text-red-500'
+                    }`}
+                  >
+                    {trade.pnl < 0 ? '-' : ''}$
+                    {Math.abs(trade.pnl).toLocaleString(undefined, {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2
+                    })}
+                  </div>
+                  <div className="text-xs text-gray-700 font-semibold">
+                    {trade.trades} trades
+                  </div>
+                </>
               )}
             </div>
           );
