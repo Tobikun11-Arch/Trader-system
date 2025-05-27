@@ -27,29 +27,29 @@ export function DashboardLayout({children}: DashboardLayoutProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex justify-between w-full max-w-4xl mx-auto mb-8">
-          {tabs.map(tab => (
-            <button
-              key={tab.id}
-              type="button"
-              onClick={() => handleTabClick(tab.path)}
-              className={`px-8 py-4 rounded-md transition font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2
-                ${
-                  currentTab === tab.id
-                    ? 'bg-blue-600 text-white shadow'
-                    : 'bg-transparent text-black hover:bg-gray-100'
-                }
-              `}
-              aria-current={currentTab === tab.id ? 'page' : undefined}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
-        <div>{children}</div>
-      </div>
+    <div className="min-h-screen bg-gray-50 flex">
+      {/* Sidebar */}
+      <nav className="w-56 min-h-screen bg-white border-r flex flex-col py-8 px-4">
+        {tabs.map(tab => (
+          <button
+            key={tab.id}
+            type="button"
+            onClick={() => handleTabClick(tab.path)}
+            className={`mb-2 px-4 py-2 rounded-md text-left transition font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2
+              ${
+                currentTab === tab.id
+                  ? 'bg-blue-100 text-blue-700'
+                  : 'bg-transparent text-gray-700 hover:bg-gray-100'
+              }
+            `}
+            aria-current={currentTab === tab.id ? 'page' : undefined}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </nav>
+      {/* Main Content */}
+      <main className="flex-1 p-8 overflow-y-auto">{children}</main>
     </div>
   );
 }
