@@ -221,13 +221,11 @@ export const PNLCalendar: React.FC = () => {
             '0'
           )}-${String(day).padStart(2, '0')}`;
           const trade = tradeData[dateStr] || null;
-          let bgColor = '';
+          let bgColor = 'bg-white';
           if (isCurrentMonth && trade) {
             bgColor = trade.pnl < 0 ? 'bg-red-100' : 'bg-green-100';
           } else if (!isCurrentMonth) {
             bgColor = 'bg-gray-100';
-          } else {
-            bgColor = 'bg-white';
           }
           return (
             <div

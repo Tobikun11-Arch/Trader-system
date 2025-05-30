@@ -2,7 +2,7 @@ import {useState, useEffect} from 'react';
 import {PNLCalendarData, PNLWeeklySummaryData} from '@/types/pnl-journal';
 
 const mockCalendar: PNLCalendarData = {
-  month: '2023-07',
+  month: new Date().toISOString().slice(0, 7),
   days: [
     {date: '2023-07-02', pnl: 651.19, trades: 1},
     {date: '2023-07-06', pnl: -1085.69, trades: 1},
@@ -16,10 +16,9 @@ const mockCalendar: PNLCalendarData = {
 };
 
 const mockWeekly: PNLWeeklySummaryData = {
-  month: '2023-07',
+  month: new Date().toISOString().slice(0, 7),
   weeks: [
     {week: 1, pnl: 2045.95, trades: 3},
-    {week: 2, pnl: -434.5, trades: 2},
     {week: 3, pnl: 3372.76, trades: 2},
     {week: 4, pnl: 2228.23, trades: 1},
     {week: 5, pnl: 3030.76, trades: 2},
