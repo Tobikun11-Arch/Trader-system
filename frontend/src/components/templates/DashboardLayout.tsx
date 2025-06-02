@@ -15,7 +15,8 @@ export function DashboardLayout({children}: DashboardLayoutProps) {
     {id: 'overview', label: 'Overview', path: '/dashboard'},
     {id: 'pnl-journal', label: 'P&L Journal', path: '/dashboard/pnl-journal'},
     {id: 'trades', label: 'Trades', path: '/dashboard/trades'},
-    {id: 'analytics', label: 'Analytics', path: '/dashboard/analytics'}
+    {id: 'analytics', label: 'Analytics', path: '/dashboard/analytics'},
+    {id: 'logout', label: 'Logout', path: '/login'}
   ];
 
   const currentTab = tabs.find(tab => pathname === tab.path)?.id || 'overview';
