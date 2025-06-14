@@ -1,10 +1,7 @@
 'use client';
 import React, {useEffect} from 'react';
-import {
-  AuthProvider,
-  useAuth
-} from '@/src/components/features/auth/AuthProvider';
-import {AuthForm} from '@/src/components/features/auth/AuthForm';
+import {AuthProvider, useAuth} from '@/components/features/auth/AuthProvider';
+import {AuthSplitLayout} from '@/components/features/auth/AuthSplitLayout';
 import {useRouter} from 'next/navigation';
 
 const RegisterPageInner = () => {
@@ -15,7 +12,7 @@ const RegisterPageInner = () => {
     if (user) router.replace('/pnl-journal');
   }, [user, router]);
 
-  return <AuthForm />;
+  return <AuthSplitLayout />;
 };
 
 export default function RegisterPage() {
